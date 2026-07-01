@@ -1,7 +1,15 @@
 import streamlit as st
 import json
 import os
+import sys
+from pathlib import Path
+
+# Add the project root to sys.path so 'src' can be imported
+project_root = Path(__file__).resolve().parent.parent.parent
+sys.path.append(str(project_root))
+
 from src.rag_core.chain import RAGChain
+
 
 # Load secrets into environment variables for underlying libraries (like Langchain) if deployed on Streamlit Cloud
 try:
