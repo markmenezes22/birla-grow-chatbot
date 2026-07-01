@@ -2,8 +2,8 @@ name: Daily Data Ingestion
 
 on:
   schedule:
-    # Runs at 00:00 UTC every day
-    - cron: '0 0 * * *'
+    # Runs at 04:30 UTC every day (which is 10:00 AM IST)
+    - cron: '30 4 * * *'
   workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
 
 jobs:
