@@ -1,0 +1,52 @@
+name: Daily Data Ingestion
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every day
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
+
+jobs:
+  ingest-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to commit and push changes back to the repo
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run data ingestion pipeline
+      env:
+        EMBEDDING_MODEL_NAME: BAAI/bge-small-en-v1.5
+      run: |
+        # Set PYTHONPATH so absolute imports from 'src' work properly
+        export PYTHONPATH=$PYTHONPATH:$(pwd)
+        python src/data_pipeline/ingest.py
+
+    - name: Commit and push updated ChromaDB
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add chroma_db/
+        
+        # Check if there are any changes to commit
+        if git diff --staged --quiet; then
+          echo "No changes in data to commit."
+        else
+          git commit -m "chore: Daily automated update of vector database [skip ci]"
+          git push
+        fi
